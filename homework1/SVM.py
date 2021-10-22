@@ -158,8 +158,6 @@ class SVM:
     def accurate(self, X, Y):
         """
         计算准确度
-        :param X: 维度是(M*d)的特征值
-        :return:
         """
         right_num = 0
         for i in range(X.shape[0]):

@@ -2,10 +2,11 @@ import random
 import numpy as np
 
 
-def read_file(file_path):
+def read_file(file_path, label_class=0):
     """
     读取文件
     :param file_path: 文件路径
+    :param label_class: 标签类型，0 为 +-1 标签，1 为 01 标签
     :return: 数据和标签
     """
     X = []
@@ -14,8 +15,12 @@ def read_file(file_path):
         while file.readable() and (line := file.readline()):
             one_iris_data = line.strip().split(",")
             x = list(map(lambda i: float(i), one_iris_data[: -1]))
-            # Iris-setosa 标签为 1， Iris-versicolor 标签为 -1
-            y = 1 if one_iris_data[-1] == "Iris-setosa" else -1
+            if label_class == 0:
+                # Iris-setosa 标签为 1， Iris-versicolor 标签为 -1
+                y = 1 if one_iris_data[-1] == "Iris-setosa" else -1
+            else:
+                # Iris-setosa 标签为 1， Iris-versicolor 标签为 0
+                y = 1 if one_iris_data[-1] == "Iris-setosa" else 0
             X.append(x)
             Y.append(y)
     return X, Y
@@ -36,15 +41,16 @@ def shuffle_data(X, Y):
     random.shuffle(Y)
 
 
-def get_dataset(file_path, train_ratio=9, test_ratio=1):
+def get_dataset(file_path, train_ratio=9, test_ratio=1, label_class=0):
     """
     封装函数，获取训练集和测试集
     :param file_path: 文件路径
     :param train_ratio: 训练集的比例
     :param test_ratio: 测试集的比例
+    :param label_class: 标签类型，0 为 +-1 标签，1 为 01 标签
     :return: 测试机和训练集
     """
-    X, Y = read_file(file_path)
+    X, Y = read_file(file_path, label_class=label_class)
     shuffle_data(X, Y)
     train_num = int(len(X) / (train_ratio + test_ratio) * train_ratio)
     train_set = np.array(X[: train_num]), np.array(Y[: train_num])
