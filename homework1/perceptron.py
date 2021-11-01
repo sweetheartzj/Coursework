@@ -13,8 +13,6 @@ class Perceptron:
                 if y * (self.w.dot(x.T) + self.b) <= 0:
                     self.w = self.w + lr * y * x
                     self.b = self.b + lr * y
-                    print(self.w)
-                    print(self.b)
                     break
             else:
                 break
@@ -29,13 +27,20 @@ class Perceptron:
                 right_num += 1
         return right_num / X.shape[0]
 
+    def get_args(self):
+        print(f"w: {self.w}")
+        print(f"b: {self.b}")
+
 
 if __name__ == '__main__':
     train_set, test_set = get_dataset("./iris.data")
     perceptron = Perceptron(w_shape=4)
     perceptron.train(*train_set, 0.01)
-    print(perceptron.accurate(*train_set))
-    print(perceptron.accurate(*test_set))
+    perceptron.get_args()
+    print("训练集正确率：", end="")
+    print(f"{perceptron.accurate(*train_set):.2%}")
+    print("测试集正确率：", end="")
+    print(f"{perceptron.accurate(*test_set):.2%}")
 
 
 

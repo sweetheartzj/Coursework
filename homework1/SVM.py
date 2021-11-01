@@ -19,6 +19,7 @@ class SVM:
         self.train_Y = train_Y
         self.alphas = np.random.random(train_Y.shape)
         self.b = np.random.random(1)
+        self.feature_num = train_X.shape[1]
         self.data_size = train_X.shape[0]
         self._E = [self._get_e(i) for i in range(self.data_size)]
 
@@ -104,6 +105,7 @@ class SVM:
             if (alpha := self._choose_alpha()) is not None:
                 i, j = alpha
             else:
+                # 所有点都满足 KKT 条件，优化结束
                 break
             # 计算相关值
             alpha1, alpha2 = self.alphas[i], self.alphas[j]
@@ -112,9 +114,13 @@ class SVM:
 
             # 2. 更新 alpha2
             E1, E2 = self._E[i], self._E[j]
-            eta = self._kernel_function(self.train_X[i, :], self.train_X[i, :]) + self._kernel_function(self.train_X[j, :], self.train_X[j, :])
-            - 2 * self._kernel_function(self.train_X[i, :], self.train_X[j, :])
+            eta = self._kernel_function(self.train_X[i, :], self.train_X[i, :]) + self._kernel_function(
+                self.train_X[j, :], self.train_X[j, :]) - 2 * self._kernel_function(
+                self.train_X[i, :], self.train_X[j, :])
+            if eta == 0:
+                continue
             alpha2_new_unc = alpha2 + y2 * (E1 - E2) / eta
+
             # 3. 剪枝 alpha2
             if y1 == y2:
                 L = max(0, alpha1 + alpha2 - self.C)
@@ -128,8 +134,10 @@ class SVM:
                 alpha2_new = L
             else:
                 alpha2_new = alpha2_new_unc
+
             # 4. 更新 alpha1
             alpha1_new = alpha1 + y1 * y2 * (alpha2 - alpha2_new)
+
             # 5. 更新 b 和 E 值
             b1_new = - E1 - y1 * self._kernel_function(x1, x1) * (alpha1_new - alpha1) \
                      - y2 * self._kernel_function(x2, x1) * (alpha2_new - alpha2) + self.b
@@ -142,10 +150,10 @@ class SVM:
             else:
                 b_new = (b1_new + b2_new) / 2
             self.b = b_new
-            self._E[i] = self._get_e(i)
-            self._E[j] = self._get_e(j)
             self.alphas[i] = alpha1_new
             self.alphas[j] = alpha2_new
+            self._E[i] = self._get_e(i)
+            self._E[j] = self._get_e(j)
 
     def predict(self, x):
         """
@@ -165,14 +173,23 @@ class SVM:
                 right_num += 1
         return right_num / X.shape[0]
 
+    def get_args(self):
+        w = np.zeros(self.feature_num)
+        for i in range(self.data_size):
+            w += self.alphas[i] * self.train_Y[i] * self.train_X[i]
+        print(f"w: {w}")
+        print(f"b: {self.b}")
+
 
 if __name__ == '__main__':
     train_set, test_set = get_dataset("./iris.data", 9, 1)
     svm = SVM()
     svm.train(*train_set, max_iteration=1000)
+    svm.get_args()
+    print("训练集正确率：", end="")
     print(svm.accurate(*train_set))
+    print("测试集正确率：", end="")
     print(svm.accurate(*test_set))
-    # print(svm.alphas)
 
 
 
