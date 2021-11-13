@@ -15,9 +15,11 @@ def read_file(file_path, label_class=0):
         while file.readable() and (line := file.readline()):
             one_iris_data = line.strip().split(",")
             x = list(map(lambda i: float(i), one_iris_data[: -1]))
+            # +-1 标签
             if label_class == 0:
                 # Iris-setosa 标签为 1， Iris-versicolor 标签为 -1
                 y = 1 if one_iris_data[-1] == "Iris-setosa" else -1
+            # 0-1 标签
             else:
                 # Iris-setosa 标签为 1， Iris-versicolor 标签为 0
                 y = 1 if one_iris_data[-1] == "Iris-setosa" else 0
